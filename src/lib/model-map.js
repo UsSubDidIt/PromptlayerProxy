@@ -1,0 +1,90 @@
+const modelMap = {
+  "claude-3-7-sonnet-20250219": {
+    "provider": "anthropic",
+    "name": "claude-3-7-sonnet-latest",
+    "model_config_display_name": null,
+    "parameters": {
+      "max_tokens": 64000,
+      "temperature": 1
+    }
+  },
+  "claude-3-7-sonnet-20250219-thinking": {
+    "provider": "anthropic",
+    "name": "claude-3-7-sonnet-latest",
+    "model_config_display_name": null,
+    "parameters": {
+      "max_tokens": 64000,
+      "thinking": {
+        "type": "enabled",
+        "budget_tokens": 32000
+      },
+      "temperature": 1
+    }
+  },
+  "gemini-2.5-pro-preview-05-06": {
+    "provider": "google",
+    "name": "gemini-2.5-pro-preview-05-06",
+    "model_config_display_name": null,
+    "parameters": {
+      "response_format": null,
+      "candidateCount": 1,
+      "stopSequences": null,
+      "maxOutputTokens": 50000,
+      "temperature": 0,
+      "topP": 0.95,
+      "topK": 40
+    }
+  },
+  "o4-mini": {
+    "provider": "openai",
+    "name": "o4-mini",
+    "model_config_display_name": null,
+    "parameters": {
+      "response_format": {
+        "type": "text"
+      },
+      "reasoning_effort": "high",
+      "max_completion_tokens": 100000
+    }
+  },
+  "chatgpt-4o-latest": {
+    "provider": "openai",
+    "name": "chatgpt-4o-latest",
+    "model_config_display_name": null,
+    "parameters": {
+      "temperature": 1,
+      "seed": 0,
+      "response_format": null,
+      "top_p": 1,
+      "frequency_penalty": 0,
+      "presence_penalty": 0
+    }
+  },
+  "gpt-4.1": {
+    "provider": "openai",
+    "name": "gpt-4.1",
+    "model_config_display_name": null,
+    "parameters": {
+      "temperature": 1,
+      "seed": 0,
+      "response_format": null,
+      "top_p": 1
+    }
+  },
+  "gpt-4.5-preview": {
+    "provider": "openai",
+    "name": "gpt-4.5-preview",
+    "model_config_display_name": null,
+    "parameters": {
+      "temperature": 1,
+      "seed": 0,
+      "response_format": null,
+      "top_p": 1,
+      "frequency_penalty": 0,
+      "presence_penalty": 0
+    }
+  }
+
+}
+
+module.exports = modelMap
