@@ -7,6 +7,8 @@ const { uploadFileBuffer } = require('../lib/upload')
 const { isJsonString } = require('../lib/tools')
 const verify = require('./verify')
 const modelMap = require('../lib/model-map')
+const fs = require('fs')
+const path = require('path')
 
 
 async function parseMessages(req, res, next) {
@@ -233,34 +235,50 @@ router.post('/v1/chat/completions', verify, parseMessages, async (req, res) => {
     ws.on('message', async (data) => {
       try {
         data = data.toString()
-        // console.log(`收到消息: ${JSON.stringify(data)}`)
+        const isRequestID = JSON.parse(data)?.messages?.[0]?.individual_run_request_id
+
+        if (isRequestID !== RequestID || !isRequestID) return
+
         let ContentText = JSON.parse(data)?.messages?.[0]
+
+        const filePath = path.join(__dirname, '..', '..', 'promptlayer.log')
+        fs.appendFileSync(filePath, `收到消息: ${JSON.stringify(ContentText)}\n`)
+
         let output = ""
 
-        if (ContentText?.name === "UPDATE_LAST_MESSAGE" && isJsonString(ContentText.data) && JSON.parse(ContentText.data).individual_run_request_id === RequestID) {
+        if (ContentText?.name === "UPDATE_LAST_MESSAGE") {
+          const MessageArray = JSON.parse(ContentText.data)?.payload?.message?.content
+          for (const item of MessageArray) {
 
-          if (JSON.parse(ContentText.data).payload.message.content[0].text) {
-            output = JSON.parse(ContentText.data).payload.message.content[0].text.replace(TextLastContent, "")
-            if (ThinkingStart && !ThinkingEnd) {
-              ThinkingEnd = true
-              output = `${output}\n\n</think>`
+            if (item.type === "text") {
+              output = item.text.replace(TextLastContent, "")
+              if (ThinkingStart && !ThinkingEnd) {
+                ThinkingEnd = true
+                output = `${output}\n\n</think>`
+              }
+              TextLastContent = item.text
             }
-            TextLastContent = JSON.parse(ContentText.data).payload.message.content[0].text
-          } else if (JSON.parse(ContentText.data).payload.message.content[0].thinking) {
-            output = JSON.parse(ContentText.data).payload.message.content[0].thinking.replace(ThinkingLastContent, "")
-            if (!ThinkingStart) {
-              ThinkingStart = true
-              output = `<think>\n\n${output}`
+            else if (item.type === "thinking" && MessageArray.length === 1) {
+              output = item.thinking.replace(ThinkingLastContent, "")
+              if (!ThinkingStart) {
+                ThinkingStart = true
+                output = `<think>\n\n${output}`
+              }
+              ThinkingLastContent = item.thinking
             }
-            ThinkingLastContent = JSON.parse(ContentText.data).payload.message.content[0].thinking
+
           }
 
+          console.log(req.body.stream)
+
           if (req.body.stream === true) {
+            console.log("output", output)
             streamChunk.choices[0].delta.content = output
             res.write(`data: ${JSON.stringify(streamChunk)}\n\n`)
           }
 
-        } else if (ContentText?.name === "INDIVIDUAL_RUN_COMPLETE" && isJsonString(ContentText.data) && JSON.parse(ContentText.data).individual_run_request_id === RequestID) {
+        }
+        else if (ContentText?.name === "INDIVIDUAL_RUN_COMPLETE") {
 
           if (req.body.stream !== true) {
             output = ThinkingLastContent ? `<think>\n\n${ThinkingLastContent}\n\n</think>\n\n${TextLastContent}` : TextLastContent
