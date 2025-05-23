@@ -94,7 +94,7 @@ async function parseMessages(req, res, next) {
   }
 }
 
-async function getChatID(req) {
+async function getChatID(req, res) {
   try {
     const url = 'https://api.promptlayer.com/api/dashboard/v2/workspaces/' + req.account.workspaceId + '/playground_sessions'
     const headers = { Authorization: "Bearer " + req.account.token }
@@ -110,9 +110,11 @@ async function getChatID(req) {
         "prompt_template": {
           "type": "chat",
           "messages": req.body.messages,
-          "tools": null,
+          "tools": req.body.tools || [],
+          "tool_choice": req.body.tool_choice || "none",
           "input_variables": [],
-          "functions": []
+          "functions": [],
+          "function_call": null
         },
         "provider_base_url_name": null
       },
@@ -122,9 +124,7 @@ async function getChatID(req) {
     for (const item in req.body) {
       if (item === "messages" || item === "model" || item === "stream") {
         continue
-      } else if (item === "tool_choice" || item === "tools") {
-        data.prompt_blueprint.prompt_template[item] = req.body[item]
-      } else {
+      }  else if (model_data.parameters[item]) {
         model_data.parameters[item] = req.body[item]
       }
     }
@@ -139,56 +139,76 @@ async function getChatID(req) {
       return false
     }
   } catch (error) {
-    console.error("错误:", error.response?.data)
+    // console.error("错误:", error.response?.data)
+    res.status(500).json({
+      "error": {
+        "message": error.message || "服务器内部错误",
+        "type": "server_error",
+        "param": null,
+        "code": "server_error"
+      }
+    })
     return false
   }
 }
 
-async function sentRequest(req) {
-  const url = 'https://api.promptlayer.com/api/dashboard/v2/workspaces/' + req.account.workspaceId + '/run_groups'
-  const headers = { Authorization: "Bearer " + req.account.token }
-  const model_data = modelMap[req.body.model] ? modelMap[req.body.model] : modelMap["claude-3-7-sonnet-20250219"]
-  let data = {
-    "id": uuidv4(),
-    "playground_session_id": req.chatID,
-    "shared_prompt_blueprint": {
-      "inference_client_name": null,
-      "metadata": {
-        "model": model_data
+async function sentRequest(req, res) {
+  try {
+    const url = 'https://api.promptlayer.com/api/dashboard/v2/workspaces/' + req.account.workspaceId + '/run_groups'
+    const headers = { Authorization: "Bearer " + req.account.token }
+    const model_data = modelMap[req.body.model] ? modelMap[req.body.model] : modelMap["claude-3-7-sonnet-20250219"]
+    let data = {
+      "id": uuidv4(),
+      "playground_session_id": req.chatID,
+      "shared_prompt_blueprint": {
+        "inference_client_name": null,
+        "metadata": {
+          "model": model_data
+        },
+        "prompt_template": {
+          "type": "chat",
+          "messages": req.body.messages,
+          "tools": req.body.tools || [],
+          "tool_choice": req.body.tool_choice || "none",
+          "input_variables": [],
+          "functions": [],
+          "function_call": null
+        },
+        "provider_base_url_name": null
       },
-      "prompt_template": {
-        "type": "chat",
-        "messages": req.body.messages,
-        "tools": null,
-        "input_variables": [],
-        "functions": []
-      },
-      "provider_base_url_name": null
-    },
-    "individual_run_requests": [
-      {
-        "input_variables": {},
-        "run_group_position": 1
-      }
-    ]
-  }
-
-  for (const item in req.body) {
-    if (item === "messages" || item === "model" || item === "stream") {
-      continue
-    } else if (item === "tool_choice" || item === "tools") {
-      data.shared_prompt_blueprint.prompt_template[item] = req.body[item]
-    } else {
-      model_data.parameters[item] = req.body[item]
+      "individual_run_requests": [
+        {
+          "input_variables": {},
+          "run_group_position": 1
+        }
+      ]
     }
-  }
-  data.shared_prompt_blueprint.metadata.model = model_data
 
-  const response = await axios.post(url, data, { headers })
-  if (response.data.success) {
-    return response.data.run_group.individual_run_requests[0].id
-  } else {
-    return false
+    for (const item in req.body) {
+      if (item === "messages" || item === "model" || item === "stream") {
+        continue
+      } else if (model_data.parameters[item]) {
+        model_data.parameters[item] = req.body[item]
+      }
+    }
+    data.shared_prompt_blueprint.metadata.model = model_data
+
+    const response = await axios.post(url, data, { headers })
+    if (response.data.success) {
+      return response.data.run_group.individual_run_requests[0].id
+    } else {
+      return false
+    }
+  } catch (error) {
+    // console.error("错误:", error.response?.data)
+    res.status(500).json({
+      "error": {
+        "message": error.message || "服务器内部错误",
+        "type": "server_error",
+        "param": null,
+        "code": "server_error"
+      }
+    })
   }
 }
 
@@ -198,24 +218,23 @@ router.post('/v1/chat/completions', verify, parseMessages, async (req, res) => {
 
   try {
 
-    let isSetHeader = false
     const setHeader = () => {
-      if (isSetHeader) return
-      if (req.body.stream === true) {
-        res.setHeader('Content-Type', 'text/event-stream')
-        res.setHeader('Cache-Control', 'no-cache')
-        res.setHeader('Connection', 'keep-alive')
-      } else {
-        res.setHeader('Content-Type', 'application/json')
+      try {
+        if (req.body.stream === true) {
+          res.setHeader('Content-Type', 'text/event-stream')
+          res.setHeader('Cache-Control', 'no-cache')
+          res.setHeader('Connection', 'keep-alive')
+        } else {
+          res.setHeader('Content-Type', 'application/json')
+        }
+      } catch (error) {
+        // console.error("设置响应头时出错:", error)
       }
-      isSetHeader = true
     }
-
-    setHeader()
 
     const { access_token, clientId } = req.account
     // 生成会话ID
-    await getChatID(req)
+    await getChatID(req, res)
 
     // 发送的数据
     const sendAction = `{"action":10,"channel":"user:${clientId}","params":{"agent":"react-hooks/2.0.2"}}`
@@ -250,12 +269,14 @@ router.post('/v1/chat/completions', verify, parseMessages, async (req, res) => {
 
     ws.on('open', async () => {
       ws.send(sendAction)
-      RequestID = await sentRequest(req)
+      RequestID = await sentRequest(req, res)
+      setHeader()
     })
 
     ws.on('message', async (data) => {
       try {
         data = data.toString()
+        // console.log(JSON.parse(data))
         let ContentText = JSON.parse(data)?.messages?.[0]
         let ContentData = JSON.parse(ContentText?.data)
         const isRequestID = ContentData?.individual_run_request_id
@@ -299,7 +320,7 @@ router.post('/v1/chat/completions', verify, parseMessages, async (req, res) => {
           }
 
           if (ThinkingLastContent === "" && TextLastContent === "") {
-            output = "该模型暂时不可用，请切换至其他模型"
+            output = "该模型在发送请求时遇到错误: \n1. 请检查请求参数,模型支持参数和默认参数可在/v1/models下查看\n2. 参数设置大小是否超过模型限制\n3. 模型当前官网此模型可能负载过高\n4. Claude的temperature:0-1,请勿设置超过1的值\n5. 交流与支持群: https://t.me/nodejs_project"
             streamChunk.choices[0].delta.content = output
             res.write(`data: ${JSON.stringify(streamChunk)}\n\n`)
           }

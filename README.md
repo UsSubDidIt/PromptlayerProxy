@@ -42,7 +42,6 @@
 | 🧠 `claude-sonnet-4-20250514-thinking` | `64,000` | `32,000` | Anthropic |
 | 🔮 `claude-opus-4-20250514` | `32,000` | `-` | Anthropic |
 | 🧠 `claude-opus-4-20250514-thinking` | `32,000` | `16,000` | Anthropic |
-| 🌐 `gemini-2.5-pro-preview-05-06` | `50,000` | `-` | Google |
 | 🤖 `o4-mini` | `100,000` | `-` | OpenAI |
 | 🤖 `chatgpt-4o-latest` | `-` | `-` | OpenAI |
 | 🤖 `gpt-4.1` | `-` | `-` | OpenAI |

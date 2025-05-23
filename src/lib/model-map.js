@@ -5,7 +5,9 @@ const modelMap = {
     "model_config_display_name": null,
     "parameters": {
       "max_tokens": 64000,
-      "temperature": 1
+      "temperature": 1,
+      "top_k": 0,
+      "top_p": 0
     }
   },
   "claude-3-7-sonnet-20250219-thinking": {
@@ -17,8 +19,7 @@ const modelMap = {
       "thinking": {
         "type": "enabled",
         "budget_tokens": 32000
-      },
-      "temperature": 1
+      }
     }
   },
   "claude-sonnet-4-20250514": {
@@ -27,7 +28,9 @@ const modelMap = {
     "model_config_display_name": null,
     "parameters": {
       "max_tokens": 64000,
-      "temperature": 1
+      "temperature": 1,
+      "top_k": 0,
+      "top_p": 0
     }
   },
   "claude-sonnet-4-20250514-thinking": {
@@ -39,8 +42,7 @@ const modelMap = {
       "thinking": {
         "type": "enabled",
         "budget_tokens": 32000
-      },
-      "temperature": 1
+      }
     }
   },
   "claude-opus-4-20250514": {
@@ -49,7 +51,9 @@ const modelMap = {
     "model_config_display_name": null,
     "parameters": {
       "max_tokens": 32000,
-      "temperature": 1
+      "temperature": 1,
+      "top_k": 0,
+      "top_p": 0
     }
   },
   "claude-opus-4-20250514-thinking": {
@@ -61,24 +65,22 @@ const modelMap = {
       "thinking": {
         "type": "enabled",
         "budget_tokens": 16000
-      },
-      "temperature": 1
+      }
     }
   },
-  "gemini-2.5-pro-preview-05-06": {
-    "provider": "google",
-    "name": "gemini-2.5-pro-preview-05-06",
-    "model_config_display_name": null,
-    "parameters": {
-      "response_format": null,
-      "candidateCount": 1,
-      "stopSequences": null,
-      "maxOutputTokens": 50000,
-      "temperature": 0,
-      "topP": 0.95,
-      "topK": 40
-    }
-  },
+  // "gemini-2.5-pro-preview-05-06": {
+  //   "provider": "google",
+  //   "name": "gemini-2.5-pro-preview-05-06",
+  //   "model_config_display_name": null,
+  //   "parameters": {
+  //     "response_format": null,
+  //     "candidateCount": 1,
+  //     "stopSequences": null,
+  //     "maxOutputTokens": 50000,
+  //     "temperature": 0,
+  //     "topK": 40
+  //   }
+  // },
   "o4-mini": {
     "provider": "openai",
     "name": "o4-mini",
