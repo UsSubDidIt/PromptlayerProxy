@@ -21,6 +21,50 @@ const modelMap = {
       "temperature": 1
     }
   },
+  "claude-sonnet-4-20250514": {
+    "provider": "anthropic",
+    "name": "claude-sonnet-4-20250514",
+    "model_config_display_name": null,
+    "parameters": {
+      "max_tokens": 64000,
+      "temperature": 1
+    }
+  },
+  "claude-sonnet-4-20250514-thinking": {
+    "provider": "anthropic",
+    "name": "claude-sonnet-4-20250514",
+    "model_config_display_name": null,
+    "parameters": {
+      "max_tokens": 64000,
+      "thinking": {
+        "type": "enabled",
+        "budget_tokens": 32000
+      },
+      "temperature": 1
+    }
+  },
+  "claude-opus-4-20250514": {
+    "provider": "anthropic",
+    "name": "claude-opus-4-20250514",
+    "model_config_display_name": null,
+    "parameters": {
+      "max_tokens": 32000,
+      "temperature": 1
+    }
+  },
+  "claude-opus-4-20250514-thinking": {
+    "provider": "anthropic",
+    "name": "claude-opus-4-20250514",
+    "model_config_display_name": null,
+    "parameters": {
+      "max_tokens": 32000,
+      "thinking": {
+        "type": "enabled",
+        "budget_tokens": 16000
+      },
+      "temperature": 1
+    }
+  },
   "gemini-2.5-pro-preview-05-06": {
     "provider": "google",
     "name": "gemini-2.5-pro-preview-05-06",

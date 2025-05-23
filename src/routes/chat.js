@@ -4,11 +4,8 @@ const WebSocket = require('ws')
 const router = express.Router()
 const { v4: uuidv4 } = require('uuid')
 const { uploadFileBuffer } = require('../lib/upload')
-const { isJsonString } = require('../lib/tools')
 const verify = require('./verify')
 const modelMap = require('../lib/model-map')
-const fs = require('fs')
-const path = require('path')
 
 
 async function parseMessages(req, res, next) {
@@ -235,19 +232,15 @@ router.post('/v1/chat/completions', verify, parseMessages, async (req, res) => {
     ws.on('message', async (data) => {
       try {
         data = data.toString()
-        const isRequestID = JSON.parse(data)?.messages?.[0]?.individual_run_request_id
-
-        if (isRequestID !== RequestID || !isRequestID) return
-
         let ContentText = JSON.parse(data)?.messages?.[0]
-
-        const filePath = path.join(__dirname, '..', '..', 'promptlayer.log')
-        fs.appendFileSync(filePath, `收到消息: ${JSON.stringify(ContentText)}\n`)
+        let ContentData = JSON.parse(ContentText?.data)
+        const isRequestID = ContentData?.individual_run_request_id
+        if (isRequestID != RequestID || !isRequestID) return
 
         let output = ""
 
         if (ContentText?.name === "UPDATE_LAST_MESSAGE") {
-          const MessageArray = JSON.parse(ContentText.data)?.payload?.message?.content
+          const MessageArray = ContentData?.payload?.message?.content
           for (const item of MessageArray) {
 
             if (item.type === "text") {
@@ -269,10 +262,7 @@ router.post('/v1/chat/completions', verify, parseMessages, async (req, res) => {
 
           }
 
-          console.log(req.body.stream)
-
           if (req.body.stream === true) {
-            console.log("output", output)
             streamChunk.choices[0].delta.content = output
             res.write(`data: ${JSON.stringify(streamChunk)}\n\n`)
           }
@@ -322,6 +312,7 @@ router.post('/v1/chat/completions', verify, parseMessages, async (req, res) => {
             let finalChunk = {
               "id": MessageID,
               "object": "chat.completion.chunk",
+              "system_fingerprint": "fp_44709d6fcb",
               "created": Math.floor(Date.now() / 1000),
               "model": req.body.model,
               "choices": [
@@ -333,11 +324,6 @@ router.post('/v1/chat/completions', verify, parseMessages, async (req, res) => {
               ]
             }
 
-            // 仅当模型是OpenAI模型时添加system_fingerprint字段
-            if (!req.body.model.includes("claude")) {
-              finalChunk.system_fingerprint = "fp_44709d6fcb"
-            }
-
             res.write(`data: ${JSON.stringify(finalChunk)}\n\n`)
             res.write(`data: [DONE]\n\n`)
             res.end()
@@ -346,7 +332,7 @@ router.post('/v1/chat/completions', verify, parseMessages, async (req, res) => {
         }
 
       } catch (err) {
-        console.error("处理WebSocket消息出错:", err)
+        // console.error("处理WebSocket消息出错:", err)
       }
     })
 

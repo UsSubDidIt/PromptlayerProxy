@@ -15,11 +15,15 @@ class Manager {
     accounts = accounts.split(",").filter(account => account.trim() !== "")
     for (const account of accounts) {
       const [username, password] = account.split(":")
-      const account_result = await this.initAccount(username, password)
-      if (account_result) {
-        console.log(`初始化账户成功: ${username}`)
-        this.accounts.push(account_result)
-      }
+      this.accounts.push({
+        username,
+        password,
+        token: null,
+        clientId: null,
+        workspaceId: null,
+        access_token: null,
+        refresh: null
+      })
     }
   }
 
@@ -82,8 +86,8 @@ class Manager {
     }
   }
 
-  async initAccount(username, password) {
-    const token = await this.login(username, password)
+  async initAccount(account) {
+    const token = await this.login(account.username, account.password)
     if (!token) {
       return false
     }
@@ -95,11 +99,20 @@ class Manager {
     if (!workspaceId) {
       return false
     }
-    return { token, clientId, workspaceId, access_token }
+    account.token = token
+    account.clientId = clientId
+    account.workspaceId = workspaceId
+    account.access_token = access_token
+    account.refresh = setInterval(() => {
+      this.refreshToken(account)
+    }, 1000 * 60 * 30)
+    return account
   }
 
-  getAccount() {
+  async getAccount() {
     const account = this.accounts[this.current_account]
+    if (!account.token) await this.initAccount(account)
+    console.log(`当前账户: ${account.username}`)
     this.current_account++
     if (this.current_account >= this.accounts.length) {
       this.current_account = 0

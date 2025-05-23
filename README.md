@@ -1,131 +1,133 @@
-# PromptLayer API 代理服务
+<div align="center">
 
-这是一个用于代理访问 PromptLayer API 的服务，允许您通过兼容 OpenAI API 格式的接口来访问各种 AI 模型，包括 Claude 3.7、GPT-4.1、GPT-4o、GPT-4.5 以及 Gemini 2.5 等。
+# 🚀 PromptLayer API 代理服务
 
-## 功能特点
+[![GitHub stars](https://img.shields.io/github/stars/Rfym21/PromptlayerProxy?style=social)](https://github.com/Rfym21/PromptlayerProxy)
+[![Docker Pulls](https://img.shields.io/docker/pulls/rfym21/promptlayer-proxy)](https://hub.docker.com/r/rfym21/promptlayer-proxy)
 
-- 兼容 OpenAI API 格式的接口
-- 支持流式输出 (Streaming)
-- 支持图像处理和上传
-- 支持多账户轮询负载均衡
-- Docker 容器化部署
+*一个强大的 PromptLayer API 代理服务，支持多种主流 AI 模型*
 
-## 支持的模型
+**🔗 [交流群](https://t.me/nodejs_project) | 🐳 [Docker Hub](https://hub.docker.com/r/rfym21/promptlayer-proxy)**
 
-- `claude-3-7-sonnet-20250219` - Anthropic Claude 3.7 Sonnet
-- `claude-3-7-sonnet-20250219-thinking` - Claude 3.7 带思考过程版本
-- `gemini-2.5-pro-preview-05-06` - Google Gemini 2.5 Pro
-- `o4-mini` - OpenAI o4-mini
-- `chatgpt-4o-latest` - OpenAI GPT-4o
-- `gpt-4.1` - OpenAI GPT-4.1
-- `gpt-4.5-preview` - OpenAI GPT-4.5 Preview
+</div>
+## ✨ 功能特点
 
-## 快速开始
+<div align="center">
 
-### 前提条件
+| 功能 | 状态 | 描述 |
+|------|------|------|
+| 🔄 **OpenAI API 兼容** | ✅ | 完全兼容 OpenAI API 格式 |
+| 🌊 **流式输出** | ✅ | 支持实时流式响应 |
+| 🖼️ **图像处理** | ✅ | 支持图像上传和识别 |
+| ⚖️ **负载均衡** | ✅ | 多账户轮询负载均衡 |
+| 🐳 **容器化部署** | ✅ | Docker 一键部署 |
+| 🔄 **自动刷新** | ✅ | 智能 Token 自动刷新 |
+| 🛠️ **Function Call** | ❌ | 正在开发中... |
+| 🔌 **MCP 协议** | ❌ | 正在开发中... |
 
-- Docker 和 Docker Compose
-- PromptLayer 账号信息
+</div>
 
-### 部署步骤
+---
 
-1. 克隆代码仓库到本地
+## 🤖 支持的模型
 
-2. 配置环境变量
+<div align="center">
 
-   在 `docker-compose.yml` 文件中设置两个重要参数：
+| 🏷️ 模型名称 | 📊 最大输出长度 | 🧠 思考长度 | 📈 类型 |
+|-----------|-------------|---------|-------|
+| 🔮 `claude-3-7-sonnet-20250219` | `64,000` | `-` | Anthropic |
+| 🧠 `claude-3-7-sonnet-20250219-thinking` | `64,000` | `32,000` | Anthropic |
+| 🔮 `claude-sonnet-4-20250514` | `64,000` | `-` | Anthropic |
+| 🧠 `claude-sonnet-4-20250514-thinking` | `64,000` | `32,000` | Anthropic |
+| 🔮 `claude-opus-4-20250514` | `32,000` | `-` | Anthropic |
+| 🧠 `claude-opus-4-20250514-thinking` | `32,000` | `16,000` | Anthropic |
+| 🌐 `gemini-2.5-pro-preview-05-06` | `50,000` | `-` | Google |
+| 🤖 `o4-mini` | `100,000` | `-` | OpenAI |
+| 🤖 `chatgpt-4o-latest` | `-` | `-` | OpenAI |
+| 🤖 `gpt-4.1` | `-` | `-` | OpenAI |
+| 🤖 `gpt-4.5-preview` | `-` | `-` | OpenAI |
 
-   ```yaml
-   environment:
-     - COOKIES=your_account:your_password  # PromptLayer账号密码，账号密码用:隔开，多个账号用逗号分隔
-     - AUTH_TOKEN=your_auth_token_here     # 设置API认证密钥，用于验证API调用
-   ```
+</div>
 
-3. 启动服务
+---
 
-   ```bash
-   docker-compose up -d
-   ```
+## 🚀 快速开始
 
-   或者直接使用预构建的镜像：
+### 方式一：🐳 Docker Compose（推荐）
 
-   ```bash
-   docker run -d --name promptlayer-proxy -p 3000:3000 -e COOKIES=your_account:your_password -e AUTH_TOKEN=your_auth_token_here rfym21/promptlayer-proxy:latest
-   ```
+#### 📥 **Step 1**: 下载配置文件
 
-## API 使用方法
-
-### 认证
-
-在所有API请求中，需要在请求头中包含您设置的AUTH_TOKEN：
-
-```
-Authorization: Bearer your_auth_token_here
+```bash
+curl -o docker-compose.yml https://raw.githubusercontent.com/Rfym21/PromptlayerProxy/refs/heads/main/docker-compose.yml
 ```
 
-### 获取可用模型
+#### ⚙️ **Step 2**: 配置环境变量
 
-```
-GET http://localhost:3000/v1/models
-```
+在 `docker-compose.yml` 文件中设置以下参数：
 
-### 发送聊天请求
-
-```
-POST http://localhost:3000/v1/chat/completions
-```
-
-请求体示例：
-
-```json
-{
-  "model": "claude-3-7-sonnet-20250219",
-  "messages": [
-    {
-      "role": "user",
-      "content": "你好，请介绍一下自己"
-    }
-  ],
-  "stream": true
-}
+```yaml
+services:
+  mammouth-proxy:
+    image: rfym21/promptlayer-proxy:latest
+    container_name: promptlayer-proxy
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - COOKIES=your_cookies_here      # 🔐 PromptLayer 账号密码
+      - AUTH_TOKEN=your_auth_token_here # 🔑 API 认证密钥
 ```
 
-### 图像处理
+#### 🚀 **Step 3**: 启动服务
 
-支持发送图像到模型，使用base64编码的图像或外部图像URL。
+```bash
+docker-compose up -d
+```
 
-## 本地开发
+---
 
-如果您想在本地开发和测试：
+### 方式二：🐳 Docker CLI
 
-1. 安装依赖
+```bash
+docker run -d \
+  --name promptlayer-proxy \
+  -p 3000:3000 \
+  -e ACCOUNTS=your_account:your_password \
+  -e AUTH_TOKEN=your_auth_token_here \
+  rfym21/promptlayer-proxy:latest
+```
 
-   ```bash
-   npm install
-   ```
+---
 
-2. 创建`.env`文件并设置账号和认证信息
+### 方式三：💻 本地开发
 
-   ```
-   ACCOUNTS=your_account:your_password
-   AUTH_TOKEN=your_auth_token_here
-   ```
+#### 📦 **Step 1**: 安装依赖
 
-3. 启动开发模式
+```bash
+npm install
+```
 
-   ```bash
-   npm run dev
-   ```
+#### 📝 **Step 2**: 环境配置
 
-## 注意事项
+创建 `.env` 文件：
 
-- 请确保您有有效的PromptLayer账号
-- 多个账号设置可以实现负载均衡
-- 所有API请求需要验证AUTH_TOKEN
+```env
+ACCOUNTS=your_account:your_password
+AUTH_TOKEN=your_auth_token_here
+```
 
-## 技术栈
+#### 🏃 **Step 3**: 启动开发模式
 
-- Node.js + Express
-- WebSocket (ws)
-- Docker
-- Axios
+```bash
+npm run dev
+```
+
+---
+
+<div align="center">
+
+## 💬 交流与支持
+
+[![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/nodejs_project)
+
+</div>
