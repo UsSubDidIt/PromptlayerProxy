@@ -1,6 +1,6 @@
 {
-  "name": "claude-api-server",
-  "version": "1.0.0",
+  "name": "promptlayer-proxy",
+  "version": "2.0.0",
   "description": "",
   "main": "src/server.js",
   "scripts": {
@@ -9,8 +9,7 @@
   },
   "keywords": [
     "api",
-    "claude",
-    "openai",
+    "promptlayer",
     "express"
   ],
   "author": "",

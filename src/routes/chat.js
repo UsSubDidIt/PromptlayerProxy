@@ -98,15 +98,6 @@ async function getChatID(req) {
   try {
     const url = 'https://api.promptlayer.com/api/dashboard/v2/workspaces/' + req.account.workspaceId + '/playground_sessions'
     const headers = { Authorization: "Bearer " + req.account.token }
-    const model_data = modelMap[req.body.model] ? modelMap[req.body.model] : modelMap["claude-3-7-sonnet-20250219"]
-    for (item in req.body) {
-      if (item === "messages" || item === "model" || item === "stream") {
-        continue
-      }
-      else {
-        model_data.parameters[item] = req.body[item]
-      }
-    }
 
     let data = {
       "id": uuidv4(),
@@ -127,6 +118,19 @@ async function getChatID(req) {
       },
       "input_variables": []
     }
+
+    const model_data = modelMap[req.body.model] ? modelMap[req.body.model] : modelMap["claude-3-7-sonnet-20250219"]
+    for (item in req.body) {
+      if (item === "messages" || item === "model" || item === "stream") {
+        continue
+      } else if (item === "tool_choice" || item === "tools") {
+        data.shared_prompt_blueprint.prompt_template[item] = req.body[item]
+      } else {
+        model_data.parameters[item] = req.body[item]
+      }
+    }
+    data.shared_prompt_blueprint.metadata.model = model_data
+
     const response = await axios.put(url, data, { headers })
     if (response.data.success) {
       console.log(`生成会话ID成功: ${response.data.playground_session.id}`)
@@ -144,15 +148,6 @@ async function getChatID(req) {
 async function sentRequest(req) {
   const url = 'https://api.promptlayer.com/api/dashboard/v2/workspaces/' + req.account.workspaceId + '/run_groups'
   const headers = { Authorization: "Bearer " + req.account.token }
-  const model_data = modelMap[req.body.model] ? modelMap[req.body.model] : modelMap["claude-3-7-sonnet-20250219"]
-  for (item in req.body) {
-    if (item === "messages" || item === "model" || item === "stream") {
-      continue
-    }
-    else {
-      model_data.parameters[item] = req.body[item]
-    }
-  }
 
   let data = {
     "id": uuidv4(),
@@ -178,6 +173,20 @@ async function sentRequest(req) {
       }
     ]
   }
+
+  const model_data = modelMap[req.body.model] ? modelMap[req.body.model] : modelMap["claude-3-7-sonnet-20250219"]
+  for (item in req.body) {
+    if (item === "messages" || item === "model" || item === "stream") {
+      continue
+    } else if (item === "tool_choice" || item === "tools") {
+      data.shared_prompt_blueprint.prompt_template[item] = req.body[item]
+    } else {
+      model_data.parameters[item] = req.body[item]
+    }
+  }
+  data.shared_prompt_blueprint.metadata.model = model_data
+
+
   const response = await axios.post(url, data, { headers })
   if (response.data.success) {
     return response.data.run_group.individual_run_requests[0].id
