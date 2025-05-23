@@ -111,8 +111,27 @@ class Manager {
 
   async getAccount() {
     const account = this.accounts[this.current_account]
-    if (!account.token) await this.initAccount(account)
-    console.log(`当前账户: ${account.username}`)
+    if (!account) {
+      console.error('没有可用的账户')
+      return null
+    }
+    
+    if (!account.token) {
+      console.log(`初始化账户: ${account.username}`)
+      const initialized = await this.initAccount(account)
+      if (!initialized) {
+        console.error(`账户初始化失败: ${account.username}`)
+        // 尝试下一个账户
+        this.current_account++
+        if (this.current_account >= this.accounts.length) {
+          this.current_account = 0
+        }
+        // 递归尝试下一个账户
+        return await this.getAccount()
+      }
+    }
+    
+    console.log(`当前账户: ${account.username}, Token: ${account.token ? 'Valid' : 'Invalid'}`)
     this.current_account++
     if (this.current_account >= this.accounts.length) {
       this.current_account = 0

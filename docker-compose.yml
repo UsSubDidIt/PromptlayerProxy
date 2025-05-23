@@ -1,10 +1,10 @@
 services:
-  mammouth-proxy:
+  promptlayer-proxy:
     image: rfym21/promptlayer-proxy:latest
     container_name: promptlayer-proxy
     restart: always
     ports:
       - "3000:3000"
     environment:
-      - ACCOUNTS=your_cookies_here  # 填入promptlayer账号密码，账号密码之间用:隔开，多个账号用逗号分隔
+      - ACCOUNTS=your_account:your_password  # 填入promptlayer账号密码，账号密码之间用:隔开，多个账号用逗号分隔
       - AUTH_TOKEN=your_auth_token_here  # 设置API认证密钥

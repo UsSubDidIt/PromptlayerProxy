@@ -68,14 +68,14 @@ curl -o docker-compose.yml https://raw.githubusercontent.com/Rfym21/PromptlayerP
 
 ```yaml
 services:
-  mammouth-proxy:
+  promptlayer-proxy:
     image: rfym21/promptlayer-proxy:latest
     container_name: promptlayer-proxy
     restart: always
     ports:
       - "3000:3000"
     environment:
-      - COOKIES=your_cookies_here      # 🔐 PromptLayer 账号密码
+      - ACCOUNTS=your_account:your_password      # 🔐 PromptLayer 账号密码
       - AUTH_TOKEN=your_auth_token_here # 🔑 API 认证密钥
 ```
 
