@@ -103,8 +103,11 @@ class Manager {
     account.clientId = clientId
     account.workspaceId = workspaceId
     account.access_token = access_token
-    account.refresh = setInterval(() => {
-      this.refreshToken(account)
+    account.refresh = setInterval(async () => {
+      const { access_token, clientId } = await this.getClientId(account.token)
+      account.access_token = access_token
+      account.clientId = clientId
+      console.log(`${account.username} 刷新token成功`)
     }, 1000 * 60 * 30)
     return account
   }

@@ -98,7 +98,7 @@ async function getChatID(req) {
   try {
     const url = 'https://api.promptlayer.com/api/dashboard/v2/workspaces/' + req.account.workspaceId + '/playground_sessions'
     const headers = { Authorization: "Bearer " + req.account.token }
-
+    const model_data = modelMap[req.body.model] ? modelMap[req.body.model] : modelMap["claude-3-7-sonnet-20250219"]
     let data = {
       "id": uuidv4(),
       "name": "Not implemented",
@@ -119,17 +119,16 @@ async function getChatID(req) {
       "input_variables": []
     }
 
-    const model_data = modelMap[req.body.model] ? modelMap[req.body.model] : modelMap["claude-3-7-sonnet-20250219"]
-    for (item in req.body) {
+    for (const item in req.body) {
       if (item === "messages" || item === "model" || item === "stream") {
         continue
       } else if (item === "tool_choice" || item === "tools") {
-        data.shared_prompt_blueprint.prompt_template[item] = req.body[item]
+        data.prompt_blueprint.prompt_template[item] = req.body[item]
       } else {
         model_data.parameters[item] = req.body[item]
       }
     }
-    data.shared_prompt_blueprint.metadata.model = model_data
+    data.prompt_blueprint.metadata.model = model_data
 
     const response = await axios.put(url, data, { headers })
     if (response.data.success) {
@@ -148,7 +147,7 @@ async function getChatID(req) {
 async function sentRequest(req) {
   const url = 'https://api.promptlayer.com/api/dashboard/v2/workspaces/' + req.account.workspaceId + '/run_groups'
   const headers = { Authorization: "Bearer " + req.account.token }
-
+  const model_data = modelMap[req.body.model] ? modelMap[req.body.model] : modelMap["claude-3-7-sonnet-20250219"]
   let data = {
     "id": uuidv4(),
     "playground_session_id": req.chatID,
@@ -174,8 +173,7 @@ async function sentRequest(req) {
     ]
   }
 
-  const model_data = modelMap[req.body.model] ? modelMap[req.body.model] : modelMap["claude-3-7-sonnet-20250219"]
-  for (item in req.body) {
+  for (const item in req.body) {
     if (item === "messages" || item === "model" || item === "stream") {
       continue
     } else if (item === "tool_choice" || item === "tools") {
@@ -185,7 +183,6 @@ async function sentRequest(req) {
     }
   }
   data.shared_prompt_blueprint.metadata.model = model_data
-
 
   const response = await axios.post(url, data, { headers })
   if (response.data.success) {
