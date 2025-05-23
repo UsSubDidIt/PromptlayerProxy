@@ -75,8 +75,10 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - ACCOUNTS=your_account:your_password      # 🔐 PromptLayer 账号密码
-      - AUTH_TOKEN=your_auth_token_here # 🔑 API 认证密钥
+       # 🔐 PromptLayer 账号密码
+      - ACCOUNTS=your_account1:your_password1,your_account2:your_password2...
+       # 🔑 API 认证密钥
+      - AUTH_TOKEN=your_auth_token_here
 ```
 
 #### 🚀 **Step 3**: 启动服务
