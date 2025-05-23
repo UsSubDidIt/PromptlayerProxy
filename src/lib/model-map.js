@@ -68,19 +68,6 @@ const modelMap = {
       }
     }
   },
-  // "gemini-2.5-pro-preview-05-06": {
-  //   "provider": "google",
-  //   "name": "gemini-2.5-pro-preview-05-06",
-  //   "model_config_display_name": null,
-  //   "parameters": {
-  //     "response_format": null,
-  //     "candidateCount": 1,
-  //     "stopSequences": null,
-  //     "maxOutputTokens": 50000,
-  //     "temperature": 0,
-  //     "topK": 40
-  //   }
-  // },
   "o4-mini": {
     "provider": "openai",
     "name": "o4-mini",
