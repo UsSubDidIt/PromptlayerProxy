@@ -110,8 +110,8 @@ async function getChatID(req, res) {
         "prompt_template": {
           "type": "chat",
           "messages": req.body.messages,
-          "tools": req.body.tools || [],
-          "tool_choice": req.body.tool_choice || "none",
+          "tools": req.body.tools || null,
+          "tool_choice": req.body.tool_choice || null,
           "input_variables": [],
           "functions": [],
           "function_call": null
@@ -124,12 +124,17 @@ async function getChatID(req, res) {
     for (const item in req.body) {
       if (item === "messages" || item === "model" || item === "stream") {
         continue
-      }  else if (model_data.parameters[item]) {
+      } else if (model_data.parameters[item]) {
+        if (item === "thinking" && req.body[item].type === "disabled") { continue }
         model_data.parameters[item] = req.body[item]
       }
     }
+
     data.prompt_blueprint.metadata.model = model_data
-    console.log(`模型参数: ${data.prompt_blueprint.metadata.model}`)
+    if (model_data.parameters.max_tokens && model_data.parameters.thinking?.budget_tokens && model_data.parameters.max_tokens < model_data.parameters.thinking.budget_tokens) {
+      data.prompt_blueprint.metadata.model.parameters.thinking.budget_tokens = model_data.parameters.max_tokens
+    }
+    console.log("模型参数 => ", data.prompt_blueprint.metadata.model)
 
     const response = await axios.put(url, data, { headers })
     if (response.data.success) {
@@ -169,8 +174,8 @@ async function sentRequest(req, res) {
         "prompt_template": {
           "type": "chat",
           "messages": req.body.messages,
-          "tools": req.body.tools || [],
-          "tool_choice": req.body.tool_choice || "none",
+          "tools": req.body.tools || null,
+          "tool_choice": req.body.tool_choice || null,
           "input_variables": [],
           "functions": [],
           "function_call": null
@@ -189,10 +194,14 @@ async function sentRequest(req, res) {
       if (item === "messages" || item === "model" || item === "stream") {
         continue
       } else if (model_data.parameters[item]) {
+        if (item === "thinking" && req.body[item].type === "disabled") continue
         model_data.parameters[item] = req.body[item]
       }
     }
     data.shared_prompt_blueprint.metadata.model = model_data
+    if (model_data.parameters.max_tokens && model_data.parameters.thinking?.budget_tokens && model_data.parameters.max_tokens < model_data.parameters.thinking.budget_tokens) {
+      data.prompt_blueprint.metadata.model.parameters.thinking.budget_tokens = model_data.parameters.max_tokens
+    }
 
     const response = await axios.post(url, data, { headers })
     if (response.data.success) {
@@ -215,8 +224,6 @@ async function sentRequest(req, res) {
 
 // 聊天完成路由
 router.post('/v1/chat/completions', verify, parseMessages, async (req, res) => {
-  // console.log(JSON.stringify(req.body))
-
   try {
 
     const setHeader = () => {
@@ -321,7 +328,7 @@ router.post('/v1/chat/completions', verify, parseMessages, async (req, res) => {
           }
 
           if (ThinkingLastContent === "" && TextLastContent === "") {
-            output = "该模型在发送请求时遇到错误: \n1. 请检查请求参数,模型支持参数和默认参数可在/v1/models下查看\n2. 参数设置大小是否超过模型限制\n3. 模型当前官网此模型可能负载过高,可以切换别的模型尝试,这属于正常现象\n4. Anthropic系列模型的temperature的取值为0-1,请勿设置超过1的值\n5. 交流与支持群: https://t.me/nodejs_project"
+            output = "该模型在发送请求时遇到错误: \n1. 请检查请求参数,模型支持参数和默认参数可在/v1/models下查看\n2. 参数设置大小是否超过模型限制\n3. 模型当前官网此模型可能负载过高,可以切换别的模型尝试,这属于正常现象\n4. Anthropic系列模型的temperature的取值为0-1,请勿设置超过1的值,思考模型的 budget_tokens 不可小于 max_tokens \n5. 交流与支持群: https://t.me/nodejs_project"
             streamChunk.choices[0].delta.content = output
             res.write(`data: ${JSON.stringify(streamChunk)}\n\n`)
           }

@@ -20,6 +20,7 @@ const verify = async (req, res, next) => {
         })
       }
       // console.log(`身份校验成功，使用账号=> ${JSON.stringify(req.account)}`)
+      // console.log(req.body)
       next()
     } catch (error) {
       console.error('获取账户时出错:', error)
